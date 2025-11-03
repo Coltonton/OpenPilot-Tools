@@ -41,7 +41,7 @@ from support.support_variables import OPENPILOT_TOOLS_VER
 print('OpenPilot Tools Version '+ OPENPILOT_TOOLS_VER)
 
 import os
-import time
+import time, subprocess
 from os import path
 from support.support_functions import *
 from support.support_variables import CLEANUP_TEXT, UTIL_WELCOME_TEXT
@@ -70,6 +70,17 @@ class ToolUtility:
                 QUIT_PROG()
 
     def SetStaticIP(self):
+        # Get current connection name
+        current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()
+        # Get all connection names
+        all_con = subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines()
+        all_con = [c for c in all_con if "connection" in c]
+
+        print(current_conn)
+        print(all_con)
+
+
+
         SET_STATIC_IP(DeviceData)
 
     '''def Install_From_Loc(self):      #Install a custom theme from custom location

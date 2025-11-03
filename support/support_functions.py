@@ -4,6 +4,8 @@ from os import path
 from datetime import datetime
 from support.support_variables import *
 
+from colorama import Fore, Back, Style
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))  # __file__ is safer since it doesn't change based on where this file is called from
 
 #########################################################
@@ -80,11 +82,9 @@ def check_colorama():
         subprocess.check_call([
             sys.executable, "-m", "pip", "install", "--user", "colorama"
         ])
-
-def HANDLE_MENU(selection):
-    pass
     
-def PRINT_MENU(menu_opts):
+def PRINT_MENU(title, menu_opts):
+    print(title)
     for idx, var in enumerate(menu_opts + MENU_LIST):
         print('{}. {}'.format(idx + 1, var))
     index = int(input("Enter Index Value: ")) - 1
@@ -122,9 +122,17 @@ def get_cidr(IP, SUBNET):
     DebugPrint('generated CIDR: {}'.format(cidr), fromprocess_input="sf")
     return(cidr)
 def get_wlan_connections():
-    current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()            # Get current connection name
+    current_connections = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()   # Get current connection name
     all_connections = [c for c in subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines() if "connection" in c]    # Get all actual connection names                                                                    
-    stripped_all_connections = [c.split("connection", 1)[1].strip() for c in all_connections]                                                                              # Strip Out SSID's
+    stripped_all_connections = [c.split("connection", 1)[1].strip() for c in all_connections]                                                    # Strip Out SSID's
+
+    connectiondata = {
+            "current_connections"      : current_connections,
+            "all_connections"          : all_connections,
+            "stripped_all_connections" : stripped_all_connections}
+
+    indexChoice = PRINT_MENU((Fore.CYAN + '\n*\nWhat connection would you like to edit?' + Style.RESET_ALL), stripped_all_connections)           # Print menu with title, and selections 
+    return connectiondata, indexChoice
 
 #########################################################
 ##================= Installer Code =================== ##

@@ -94,7 +94,7 @@ class ToolUtility:
                 print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!')
             print(Fore.CYAN + '\n*\nWhat to do with [{}]:'.format(connection_to_edit) + Style.RESET_ALL)
             indexChoice = PRINT_MENU(IP_OPTIONS)                                         #Print the given selections in a menu format and save the index choice
-            ip_mode = IP_OPTIONS[indexChoice]                                            #Set the ip_mode var based on the corrosponding IP_OPTIONS index
+            ip_mode = (IP_OPTIONS + MENU_LIST)[indexChoice]                                 #Set the ip_mode var based on the corrosponding IP_OPTIONS index
 
             if user_selection in MENU_LIST or None:                                      #If user selection is a Menu Item
                 HANDLE_MENU(user_selection)                                                 #Handle the menu selection
@@ -109,7 +109,7 @@ class ToolUtility:
             elif(ip_mode=="DHCP"):
                 if(is_editing_active):
                     print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
-                SET_IP('DHCP', connection_to_edit, is_editing_active, "", "")                                 #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name
+                SET_IP('DHCP', connection_to_edit, is_editing_active, "", "")                              #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name
             
 
     def Cleanup_Files(self):         #Remove all traces of OP Tools

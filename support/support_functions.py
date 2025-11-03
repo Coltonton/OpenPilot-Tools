@@ -49,34 +49,6 @@ def is_affirmative(key1="Yes", key2="No", output="Not installing..."): # Ask use
     time.sleep(1.5) 
     return False
 
-def make_backup_folder():                            # Generate the backup dir
-    DebugPrint('Getting backup Folder congig', fromprocess_input="sf")
-    # Check if theme backup folder doesnt exist then create
-    if not os.path.exists(BACKUPS_DIR): 
-        DebugPrint('It doesent exist... Creating at {}'.format(BACKUPS_DIR), fromprocess_input="sf")
-        os.mkdir(BACKUPS_DIR)
-    # Create session backup folder
-    while True:
-        print("\n*\nDo You wish to name your backup or use default? ")
-        if is_affirmative(key1="Custom", key2="Default", output="silent"):
-            usersChoice = input("Enter: backup.")
-            backup_dir = '{}/backup.{}'.format(BACKUPS_DIR, usersChoice)
-            if path.exists('{}'.format(backup_dir)):
-                print("Directory already exists... Overwrite Data?")
-                if is_affirmative(key1="Overwrite", key2="Don't Overwrite"):
-                    os.removedirs(backup_dir)
-                    break
-                else:
-                    print("Please try again...")
-            else:
-                break
-        else:
-            backup_dir = datetime.now().strftime('{}/backup.%m-%d-%y--%I:%M.%S-%p'.format(BACKUPS_DIR))
-            break
-    os.mkdir(backup_dir)  # Create the session backup folder
-    DebugPrint('Created session backup folder at {}'.format(backup_dir), fromprocess_input="sf")
-    return backup_dir
-
 def print_text(showText, withver=0):                 # This center formats text automatically
     max_line_length = max([len(line) for line in showText]) + 4
     print(''.join(['+' for _ in range(max_line_length)]))
@@ -102,25 +74,13 @@ def selector_picker(listvar, printtext):             # Part of smart picker
     selected_option = listvar[indexChoice]
     return selected_option
 
-def backup_overide_check(backup_dir, theme_type):    # Check if there was a backup already this session to prevent accidental overwrites
-    if path.exists('{}/{}'.format(backup_dir, theme_type)):
-        print('\nIt appears you already made a(n) {} install this session'.format(theme_type)) 
-        print('continuing will overwrite the last {} backup'.format(theme_type))
-        print('the program made this session already!!!')
-        print('Would you like to continue and overwrite previous?')
-        if not is_affirmative():
-            print('Not installed.......')
-            return True
-    else:
-        os.mkdir('{}/{}'.format(backup_dir, theme_type))
-        return False
-
 def check_colorama():
     if not importlib.util.find_spec("colorama") is not None:
         print("colorama is NOT installed") 
         subprocess.check_call([
             sys.executable, "-m", "pip", "install", "--user", "colorama"
         ])
+
 def HANDLE_MENU(selection):
     if selection == "-Main Menu-":
         return
@@ -141,13 +101,6 @@ def PRINT_MENU(menu_opts):
 #########################################################
 ## ============= Installer Support Funcs ============= ##
 #########################################################
-def mark_self_installed():      # Creates a file letting the auto installer know if a self theme installed
-    DebugPrint("mark_self_installed() called", fromprocess_input="sf")
-    DebugPrint("Marking as self installed to /storage/emulated/0/op_tools_used'", fromprocess_input="sf")
-    if Dev_DoInstall() and not path.exists ('/storage/emulated/0/op_tools_used'):
-        f = open("/storage/emulated/0/op_tools_used.txt", "w")
-        f.close
-
 def get_cidr(IP, SUBNET):
     # Convert to prefix length automatically
     prefix_length = ipaddress.IPv4Network(f"0.0.0.0/{SUBNET}").prefixlen
@@ -180,32 +133,6 @@ def SET_IP(mode, selected_conn_name, is_editing_active, ip_cidr, gateway):
 def SET_DNS():
     pass
 
-## ================= Restor-er Code ================= ##
-def get_user_backups(exclude):  #Gets users backups in /sdcard/optools-backups
-    available_backups = [t for t in os.listdir(BACKUPS_DIR)]
-    available_backups = [t for t in available_backups if os.path.isdir(os.path.join(BACKUPS_DIR, t))]
-    available_backups = [t for t in available_backups if t not in exclude]
-    lower_available_backups = [t.lower() for t in available_backups]
-  
-    print('\nAvailable backups:')
-    for idx, backup in enumerate(available_backups):
-        print('{}. {}'.format(idx + 1, backup))
-    print('\nType `exit` or enter 0 to exit.')
-  
-    while 1:
-        backup = input('\nChoose a backup to install (by index value): ').strip().lower()
-        if backup in ['exit', 'Exit', 'E', 'e', '0']:
-            exit()
-        if backup.isdigit():
-            backup = int(backup)
-            if backup > len(available_backups):
-                print('Index out of range, try again!')
-                continue
-            return available_backups[int(backup) - 1]
-        else:
-            print('Please enter only Index number value!!')
-            continue
-
 #########################################################
 ## ====================== Misc ======================= ##
 #########################################################
@@ -218,7 +145,7 @@ def QUIT_PROG():                # Terminate Program friendly
     print('\nThank you come again! You may need to reboot to see changes!\n\n########END OF PROGRAM########\n')
     sys.exit()  
 
-def str_sim(a, b):              # Part of @ShaneSmiskol's get_aval_themes code
+def str_sim(a, b):              # Part of get_aval_themes code
     return difflib.SequenceMatcher(a=a, b=b).ratio()
 
 #########################################################

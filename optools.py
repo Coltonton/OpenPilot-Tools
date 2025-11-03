@@ -81,7 +81,9 @@ class ToolUtility:
         stripped_all_con.append('-Reboot-')
         stripped_all_con.append('-Quit-')
 
+        DebugPrint('current_IP: {}'.format(conn_ip))
         DebugPrint('current_conn: {}'.format(current_conn))
+        DebugPrint('stripped_all_con: {}'.format(stripped_all_con))
         DebugPrint('all_con: {}'.format(all_con))
 
         #Ask users what resources to do
@@ -95,7 +97,7 @@ class ToolUtility:
         
         if user_selection == '-Reboot-':
             REBOOT()
-        elif user_selection == '-Quit-' or selected_conn_name is None:
+        elif user_selection == '-Quit-' or user_selection is None:
             QUIT_PROG() 
         else:
             selected_conn_name = all_con[indexChoice]   

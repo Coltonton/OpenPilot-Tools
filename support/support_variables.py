@@ -1,12 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # ===================  Misc vars =================== ##
 OPENPILOT_TOOLS_VER = "0.1"                 # This Softwares Version
 #SHOW_CONSOLE_OUTPUT = False                # Show the console output when 'make' is called?
-VERBOSE = False
+VERBOSE = True
 DEVMODE = False
 DEV_PLATFORM = ""
 IS_AFFIRMATIVE_YES = ['yes', 'ye', 'y', '1', "j", "ja", "si", "s"]
 IS_AFFIRMATIVE_UNSURE = ['i guess', 'sure', 'fine', 'whatever', 'idk', 'why', "uh", "um", "...", "bite me", "eat my shorts"]
+MENU_LIST= ["-Main Menu-", "-Reboot-", "-Quit-"]
+IP_OPTIONS=["Static", "DHCP"]
 
 # ==============  Backup related vars ============== ##
 BACKUPS_DIR = '/storage/emulated/0/optools-backups' if not DEVMODE else './test-tools-backups'
@@ -18,6 +20,7 @@ MIN_SIM_THRESHOLD = 0.25      # user's input needs to be this percent or higher 
 # =========== Get OP Ver & Location vars =========== ##
 OP_Version = 0.0
 OP_Location = ''
+
 
 # ===================== Texts ====================== ##
 WELCOME_TEXT = ['Created By: Colton (Brandon) S @D3ADCRU7R',

@@ -80,7 +80,7 @@ class ToolUtility:
         stripped_all_connections = [c.split("connection", 1)[1].strip() for c in all_connections]                                                                              # Strip Out SSID's
 
         #Ask users what resources to do
-        print(Fore.CYAN + '\n*\nWhat connection would you like to edit?')
+        print(Fore.CYAN + '\n*\nWhat connection would you like to edit?' + Style.RESET_ALL)
         indexChoice = PRINT_MENU(stripped_all_connections)
         user_selection = stripped_all_connections[indexChoice]
         
@@ -92,7 +92,7 @@ class ToolUtility:
                 is_editing_active=True                                                                #Var to set if user is editing active configuration
                 conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip() # Get current connection IP
                 print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!')
-            print(Fore.CYAN + '\n*\nWhat to do with [{}]:'.format(connection_to_edit))
+            print(Fore.CYAN + '\n*\nWhat to do with [{}]:'.format(connection_to_edit) + Style.RESET_ALL)
             indexChoice = PRINT_MENU(IP_OPTIONS)                                         #Print the given selections in a menu format and save the index choice
             ip_mode = IP_OPTIONS[indexChoice]                                            #Set the ip_mode var based on the corrosponding IP_OPTIONS index
 

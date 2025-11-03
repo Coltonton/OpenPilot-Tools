@@ -88,8 +88,15 @@ class ToolUtility:
             print('{}. {}'.format(idx + 1, conn))
         indexChoice = int(input("Enter Index Value: "))
         indexChoice -= 1 
-
-
+        selected_option = stripped_all_con[indexChoice]
+        print(selected_option)
+        
+        if selected_option   == 1:
+            print("selected inedx 1")
+        elif selected_option == '-Reboot-':
+            REBOOT()
+        elif selected_option == '-Quit-' or selected_option is None:
+            QUIT_PROG()        
 
         SET_STATIC_IP(DeviceData)
 

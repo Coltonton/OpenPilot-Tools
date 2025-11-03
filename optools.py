@@ -75,13 +75,16 @@ class ToolUtility:
         # Get all connection names
         all_con = subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines()
         all_con = [c for c in all_con if "connection" in c]
+        stripped_all_con = [c.split("connection", 1)[1].strip() for c in all_con]
+        all_con.append('-Reboot-')
+        all_con.append('-Quit-')
 
         print(current_conn)
         print(all_con)
 
         #Ask users what resources to install
-        print('\n*\nWhat resources do you want to install for the Custom theme?')
-        for idx, conn in enumerate(all_con):
+        print('\n*\nWhat connection would you like to set static IP for?')
+        for idx, conn in enumerate(stripped_all_con):
             print('{}. {}'.format(idx + 1, conn))
         indexChoice = int(input("Enter Index Value: "))
         indexChoice -= 1 

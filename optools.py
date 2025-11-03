@@ -71,7 +71,7 @@ class ToolUtility:
 
     def SetStaticIP(self):
         # Get current connection IP
-        conn_ip = subprocess.check_output(f"ip -4 addr show {"wlan0"} | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}'", shell=True, text=True).strip()
+        conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip()
         # Get current connection name
         current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()
         # Get all connection names

@@ -60,8 +60,8 @@ class ToolUtility:
             util_options = ['Set Static IP', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
             selected_util = selector_picker(util_options, 'Select a Tool:')
 
-            if   selected_util == 'Set Static IP':
-                self.SetStaticIP()
+            if   selected_util == 'IP Configuration (IPV4)':
+                self.IPV4_Config()
             elif selected_util == 'Cleanup for uninstall':
                 self.Cleanup_Files()
             elif selected_util == '-Reboot-':
@@ -69,7 +69,7 @@ class ToolUtility:
             elif selected_util == '-Quit-':
                 QUIT_PROG()
 
-    def SetStaticIP(self):
+    def IPV4_Config(self):
         # Get current connection IP
         conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip()
         # Get current connection name
@@ -87,7 +87,7 @@ class ToolUtility:
         DebugPrint('all_con: {}'.format(all_con))
 
         #Ask users what resources to do
-        print('\n*\nWhat connection would you like to set static IP for?')
+        print('\n*\nWhat connection would you like to edit?')
         for idx, conn in enumerate(stripped_all_con):
             print('{}. {}'.format(idx + 1, conn))
         indexChoice = int(input("Enter Index Value: "))
@@ -100,14 +100,41 @@ class ToolUtility:
         elif user_selection == '-Quit-' or user_selection is None:
             QUIT_PROG() 
         else:
-            selected_conn_name = all_con[indexChoice]   
+            selected_conn_name = all_con[indexChoice] 
+            ip_options=["Set Static", "Set DHCP", "-Reboot-", "-Quit-"]  
             DebugPrint('selected_conn_name: {}'.format(selected_conn_name)) 
 
-            user_input = input(f"Enter IP [{conn_ip}]: ") or conn_ip
-            user_ip = input('\nEnter your desired IP (192.168.1.69): ')
-            user_subnet = input('\nEnter your Subnet Mask (255.255.255.0) : ')
-            user_gateway = input('\nEnter your networks Gateway (192.168.1.1): ')
-            get_cidr(user_ip, user_subnet)
+            if(user_selection == current_conn):
+                editing_active=True
+                DebugPrint('User is editing current config!') 
+                print("\n*\nWARNING: You are currently editing the active connection, connection WILL drop upon submission!!")
+                print('What to do with connection [{}] *ACTIVE*:'.format(user_selection))
+            else:
+                editing_active=False
+                print('\n*\nWhat to do with connection [{}]:'.format(user_selection))
+            for idy, ipsel in enumerate(ip_options):
+                print('{}. {}'.format(idy + 1, ipsel))
+            indexChoice = int(input("Enter Index Value: "))
+            indexChoice -= 1 
+            ip_set = ip_options[indexChoice]
+            DebugPrint('User Selected: {}'.format(ip_set))
+
+            if user_selection == '-Reboot-':
+                REBOOT()
+            elif user_selection == '-Quit-' or user_selection is None:
+                QUIT_PROG() 
+            elif user_selection == 'Set Static':
+                user_ip = input(f"Enter IP [{conn_ip}]: ") or conn_ip
+                user_subnet = input(f"Enter Subnet [{"255.255.255.0"}]: ") or "255.255.255.0"
+                user_gateway = input(f"Enter Gateway (Router) [{"192.168.1.1"}]: ") or "192.168.1.1"
+                user_dns = input(f"Enter DNS [{"1.1.1.1"}]: ") or "1.1.1.1"
+                user_cidr=get_cidr(user_ip, user_subnet)
+                print("\n**WARNING: CONNECTION WILL DROP, AND DEVICE WILL REBOOT!")
+                subprocess.run(f'nmcli con mod "{selected_conn_name}" ipv4.addresses {user_cidr} 'f'ipv4.gateway {user_gateway} ipv4.dns {user_dns} ipv4.method manual', shell=True, check=True)
+                REBOOT()
+            elif user_selection == 'Set DHCP':
+                subprocess.run(f'nmcli con mod "{selected_conn_name}" ipv4.method auto', shell=True, check=True)
+            
 
         SET_STATIC_IP(DeviceData)
 

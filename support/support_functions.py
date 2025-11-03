@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, time, platform, difflib, json, ipaddress
+import os, sys, time, platform, difflib, json, ipaddress, subprocess
 from os import path
 from datetime import datetime
 from support.support_variables import *
@@ -136,7 +136,19 @@ def get_cidr(IP, SUBNET):
 #########################################################
 ##================= Installer Code =================== ##
 #########################################################
-def SET_STATIC_IP(DeviceData):
+def SET_STATIC_IP(state, conn, conn_ip):
+    if(state=="Set Static"):
+        user_ip = input(f"Enter IP [{conn_ip}]: ") or conn_ip
+        user_subnet = input(f"Enter Subnet [{"255.255.255.0"}]: ") or "255.255.255.0"
+        user_gateway = input(f"Enter Gateway (Router) [{"192.168.1.1"}]: ") or "192.168.1.1"
+        #user_dns = input(f"Enter DNS [{"1.1.1.1"}]: ") or "1.1.1.1"
+        user_cidr=get_cidr(user_ip, user_subnet)
+        print("\n**WARNING: CONNECTION WILL DROP, AND DEVICE WILL REBOOT!")
+        print("\n\n\033[31m**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!\033[0m   ")
+        subprocess.run(f'nmcli con mod "{conn}" ipv4.addresses {user_cidr} 'f'ipv4.gateway {user_gateway} ipv4.method manual', shell=True, check=True)
+        REBOOT()
+    elif(state=="Set DHCP"):
+        subprocess.run(f'nmcli con mod "{conn}" ipv4.method auto', shell=True, check=True)
     print("pass")
 
 ## ================= Restor-er Code ================= ##

@@ -121,26 +121,13 @@ class ToolUtility:
             ip_set = ip_options[indexChoice]
             DebugPrint('User Selected: {}'.format(ip_set))
 
-            
-            if ip_set == 'Set Static':
-                user_ip = input(f"Enter IP [{conn_ip}]: ") or conn_ip
-                user_subnet = input(f"Enter Subnet [{"255.255.255.0"}]: ") or "255.255.255.0"
-                user_gateway = input(f"Enter Gateway (Router) [{"192.168.1.1"}]: ") or "192.168.1.1"
-                user_dns = input(f"Enter DNS [{"1.1.1.1"}]: ") or "1.1.1.1"
-                user_cidr=get_cidr(user_ip, user_subnet)
-                print("\n**WARNING: CONNECTION WILL DROP, AND DEVICE WILL REBOOT!")
-                print("\n\n\033[31m**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!\033[0m   ")
-                subprocess.run(f'nmcli con mod "{selected_conn_name}" ipv4.addresses {user_cidr} 'f'ipv4.gateway {user_gateway} ipv4.dns {user_dns} ipv4.method manual', shell=True, check=True)
-                REBOOT()
-            elif ip_set == 'Set DHCP':
-                subprocess.run(f'nmcli con mod "{selected_conn_name}" ipv4.method auto', shell=True, check=True)
-            elif ip_set == '-Reboot-':
+            if ip_set == '-Reboot-':
                 REBOOT()
             elif ip_set == '-Quit-' or user_selection is None:
                 QUIT_PROG() 
+            else:
+                SET_STATIC_IP(ip_set, selected_conn_name, conn_ip,)
             
-
-        SET_STATIC_IP(DeviceData)
 
     '''def Install_From_Loc(self):      #Install a custom theme from custom location
         backup_dir = make_backup_folder()

@@ -60,7 +60,7 @@ class ToolUtility:
     def __init__(self):              #Init
         while True:
             util_options = ['IP Configuration (IPV4)', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
-            selected_util = selector_picker(util_options, Fore.RED + '**Main Menu**' + Fore.cyan + 'Select a Tool:' + Style.RESET_ALL)
+            selected_util = selector_picker(util_options, Fore.RED + '**Main Menu**' + Fore.CYAN + 'Select a Tool:' + Style.RESET_ALL)
 
             if   selected_util == 'IP Configuration (IPV4)':
                 self.IPV4_Config()

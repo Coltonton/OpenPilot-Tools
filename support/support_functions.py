@@ -98,6 +98,14 @@ def PRINT_MENU(menu_opts):
     retval = int(input("Enter Index Value: ")) - 1
     return retval
 
+def APPLY_CHANGES():
+    print('\nApply changes?')
+    if not is_affirmative():
+        print('Canceling...')
+        time.sleep(1.5)
+        return False
+    else:
+        return True
 #########################################################
 ## ============= Installer Support Funcs ============= ##
 #########################################################

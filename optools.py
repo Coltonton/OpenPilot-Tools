@@ -105,21 +105,20 @@ class ToolUtility:
                 user_ip_cidr = get_cidr(user_ip, user_subnet)
                 if(is_editing_active):
                     print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
+                print('\nApply changes?')
+                if not APPLY_CHANGES(): return
                 SET_IP('Static', connection_to_edit, is_editing_active, user_ip_cidr, user_gateway)       #Call the Set_IP Function as Static to begin, requires MODE[Static/DHCP], Selected Connection Name, IP in CIDR format, and Gateway
             elif(ip_mode=="DHCP"):
                 if(is_editing_active):
                     print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
+                if not APPLY_CHANGES(): return
                 SET_IP('DHCP', connection_to_edit, is_editing_active, "", "")                              #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name
             
-
     def Cleanup_Files(self):         #Remove all traces of OP Tools
         #Print hAllo message
         print_text(CLEANUP_TEXT)
         print('\nHave you read and understand the warning above and wish to proceed?')
-        if not is_affirmative():
-            print('Canceling...')
-            time.sleep(1.5)
-            exit()                 #Fix ??
+        if not APPLY_CHANGES(): return
 
         print('\nStarting.....')
         if os.path.exists("/storage/emulated/0/optools-backup") and os.path.isdir("/storage/emulated/0/optools-backup"):

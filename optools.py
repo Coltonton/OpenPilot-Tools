@@ -59,11 +59,13 @@ DeviceData = get_device_data()            # Init Device Data dict with device in
 class ToolUtility:
     def __init__(self):              #Init
         while True:
-            util_options = ['IP Configuration (IPV4)', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
+            util_options = ['IP Configuration (IPV4)', 'Configure DNS', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
             selected_util = selector_picker(util_options, Fore.RED + '**Main Menu**\n' + Fore.CYAN + 'Select a Tool:' + Style.RESET_ALL)
 
             if   selected_util == 'IP Configuration (IPV4)':
                 self.IPV4_Config()
+            elif selected_util == 'Configure DNS':
+                self.DNS_Config()
             elif selected_util == 'Cleanup for uninstall':
                 self.Cleanup_Files()
             elif selected_util == '-Reboot-':
@@ -85,22 +87,37 @@ class ToolUtility:
                 print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!')
             indexChoice2 = PRINT_MENU((Fore.CYAN + '\n*\nWhat to do with [{}]:'.format(connection_to_edit) + Style.RESET_ALL), IP_OPTIONS)       
             
-            if(indexChoice2 and ip_mode=="Static"):                                                   #If user wants to set Static IP
-                ip_mode = (IP_OPTIONS + MENU_LIST)[indexChoice]                                           #Set the ip_mode var based on the corrosponding IP_OPTIONS index
-                user_ip      = input(f"Enter IP or ENTER for [{conn_ip}]: ") or conn_ip                   #Get desired network IP
-                user_subnet  = input(f"Enter Subnet or ENTER for [{"255.255.255.0"}]: ") or "255.255.255.0"  #Get desired network Subnet
-                user_gateway = input(f"Enter Gateway (Router) or ENTER for [{"192.168.1.1"}]: ") or "192.168.1.1" #Get desired network Gateway
-                user_ip_cidr = get_cidr(user_ip, user_subnet)                                             #Generate IP in CIDR format
-                if(is_editing_active):                                                                    #If user is editing the active connection, show warning
-                    print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
-                if not APPLY_CHANGES(): return                                                            #If user gives affermation
-                SET_IP('Static', connection_to_edit, is_editing_active, user_ip_cidr, user_gateway)       #Call the Set_IP Function as Static to begin, requires MODE[Static/DHCP], Selected Connection Name, IP in CIDR format, and Gateway
-            elif(indexChoice2 and ip_mode=="DHCP"):                                                   #If user wants to set DHCP
-                if(is_editing_active):                                                                    #If user is editing the active connection, show warning
-                    print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
-                if not APPLY_CHANGES(): return                                                            #If user gives affermation
-                SET_IP('DHCP', connection_to_edit, is_editing_active, "", "")                             #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name
-            
+            if indexChoice2:
+                ip_mode = indexChoice2
+                if(ip_mode=="Static"):                                                   #If user wants to set Static IP
+                    ip_mode = (IP_OPTIONS + MENU_LIST)[indexChoice]                                           #Set the ip_mode var based on the corrosponding IP_OPTIONS index
+                    user_ip      = input(f"Enter IP or ENTER for [{conn_ip}]: ") or conn_ip                   #Get desired network IP
+                    user_subnet  = input(f"Enter Subnet or ENTER for [{"255.255.255.0"}]: ") or "255.255.255.0"  #Get desired network Subnet
+                    user_gateway = input(f"Enter Gateway (Router) or ENTER for [{"192.168.1.1"}]: ") or "192.168.1.1" #Get desired network Gateway
+                    user_ip_cidr = get_cidr(user_ip, user_subnet)                                             #Generate IP in CIDR format
+                    if(is_editing_active):                                                                    #If user is editing the active connection, show warning
+                        print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
+                    if not APPLY_CHANGES(): return                                                            #If user gives affermation
+                    SET_IP('Static', connection_to_edit, is_editing_active, user_ip_cidr, user_gateway)       #Call the Set_IP Function as Static to begin, requires MODE[Static/DHCP], Selected Connection Name, IP in CIDR format, and Gateway
+                elif(ip_mode=="DHCP"):                                                   #If user wants to set DHCP
+                    if(is_editing_active):                                                                    #If user is editing the active connection, show warning
+                        print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
+                    if not APPLY_CHANGES(): return                                                            #If user gives affermation
+                    SET_IP('DHCP', connection_to_edit, is_editing_active, "", "")                             #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name
+
+    def DNS_Config(self):
+        is_editing_active=False
+        connectiondata = {}
+        connectiondata, indexChoice = get_wlan_connections()
+        if indexChoice:                                                               #If user selection is a valid program selection
+            user_selection = (connectiondata["stripped_all_connections"])[indexChoice]     #Set the user_selection var based on the corrosponding stripped_all_connections index
+            connection_to_edit = (connectiondata["all_connections"])[indexChoice]        #Set the Connection_to_edit var based on the corrosponding all_connections index
+            if(user_selection == connectiondata["current_connection"].split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
+                is_editing_active=True                                                                #Var to set if user is editing active configuration
+                conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip() # Get current connection IP
+                print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection MAY drop upon submission!!')
+              
+
     def Cleanup_Files(self):         #Remove all traces of OP Tools
         #Print hAllo message
         print_text(CLEANUP_TEXT)

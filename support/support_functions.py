@@ -1,0 +1,229 @@
+#!/usr/bin/python
+import os, sys, time, platform, difflib, json
+from os import path
+from datetime import datetime
+from support.support_variables import *
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))  # __file__ is safer since it doesn't change based on where this file is called from
+
+#########################################################
+##===================== Shared ======================= ##
+#########################################################
+def get_device_data(onprocess='null'):         # Get and set the data based on device
+    DebugPrint('Getting Device Data...', 'sf')
+    devicedata = dict
+    with open("/data/params/d/ApiCache_Device") as f:
+        info = json.load(f)
+
+    DEVICE_TYPE=info["device_type"]
+    devicedata = {
+            "DEVICE_TYPE"          : info["device_type"]                   # EON type
+        }
+    print('IMPORTANT: {}-bricking is likely if this detection is incorrect!'.format("Soft" if not DEVMODE else "SEVERE"))
+
+    if not DEVMODE:
+        time.sleep(4)  # Pause for suspense, and so can be read
+  
+    cycle = 0
+    for x in devicedata.keys():
+        DebugPrint('{} = {}'.format(x, devicedata[x]), overide="sf" ,multi=1 if cycle <1 else 2)
+        cycle = cycle +1
+    return devicedata
+
+def is_affirmative(key1="Yes", key2="No", output="Not installing..."): # Ask user for confirmation
+    #DebugPrint('Asking to confirm', 'sf')
+    key1_l = key1.lower().strip()                   # lowercase key1 for compare
+    key2_lf = key2.lower().strip()[0]               # lowercase first char key2 for compare
+    key1_lf = key1_l[0] if key1_l[0] not in ["n", key2_lf] else "y" # Get first letter key1(lower), if is "n" (same as no) or same as key2 ignore...
+    afirm = input('[1.{} / 2.{}]: '.format(key1,key2)).lower().strip()
+    DebugPrint('Got {}'.format(afirm), 'sf')
+    if ((afirm in IS_AFFIRMATIVE_YES) or (afirm in [key1_l, key1_lf])): 
+        return True
+    if afirm in IS_AFFIRMATIVE_UNSURE:
+        print("WTF do you mean {}... I'm going to assume NO so I dont brick ya shi...".format(afirm))
+    if afirm in ['i dont talk to cops without my lawyer present']: # Do you like your eggs real or plastic?
+        print("Attaboy Ope!") # Please tell me you watched the Andy Griffith Show... I was only born in '99...
+    
+    if output != "silent": print('{}'.format(output))
+    time.sleep(1.5) 
+    return False
+
+def make_backup_folder():                            # Generate the backup dir
+    DebugPrint('Getting backup Folder congig', fromprocess_input="sf")
+    # Check if theme backup folder doesnt exist then create
+    if not os.path.exists(BACKUPS_DIR): 
+        DebugPrint('It doesent exist... Creating at {}'.format(BACKUPS_DIR), fromprocess_input="sf")
+        os.mkdir(BACKUPS_DIR)
+    # Create session backup folder
+    while True:
+        print("\n*\nDo You wish to name your backup or use default? ")
+        if is_affirmative(key1="Custom", key2="Default", output="silent"):
+            usersChoice = input("Enter: backup.")
+            backup_dir = '{}/backup.{}'.format(BACKUPS_DIR, usersChoice)
+            if path.exists('{}'.format(backup_dir)):
+                print("Directory already exists... Overwrite Data?")
+                if is_affirmative(key1="Overwrite", key2="Don't Overwrite"):
+                    os.removedirs(backup_dir)
+                    break
+                else:
+                    print("Please try again...")
+            else:
+                break
+        else:
+            backup_dir = datetime.now().strftime('{}/backup.%m-%d-%y--%I:%M.%S-%p'.format(BACKUPS_DIR))
+            break
+    os.mkdir(backup_dir)  # Create the session backup folder
+    DebugPrint('Created session backup folder at {}'.format(backup_dir), fromprocess_input="sf")
+    return backup_dir
+
+def print_text(showText, withver=0):                 # This center formats text automatically
+    max_line_length = max([len(line) for line in showText]) + 4
+    print(''.join(['+' for _ in range(max_line_length)]))
+    for line in showText:
+        padding = max_line_length - len(line) - 2
+        padding_left = padding // 2
+        print('+{}+'.format(' ' * padding_left + line + ' ' * (padding - padding_left)))
+    print(''.join(['+' for _ in range(max_line_length)]))
+
+def selector_picker(listvar, printtext):             # Part of smart picker
+    options = list(listvar)      # this only contains available options from self.get_available_options
+    if not len(options):
+        print('No options were given')
+        time.sleep(2)
+        return
+        
+    print('\n{}'.format(printtext))
+    for idx, select in enumerate(options):
+        print('{}. {}'.format(idx + 1, select))
+    indexChoice = int(input("Enter Index Value: "))
+    indexChoice -= 1 
+
+    selected_option = listvar[indexChoice]
+    return selected_option
+
+def backup_overide_check(backup_dir, theme_type):    # Check if there was a backup already this session to prevent accidental overwrites
+    if path.exists('{}/{}'.format(backup_dir, theme_type)):
+        print('\nIt appears you already made a(n) {} install this session'.format(theme_type)) 
+        print('continuing will overwrite the last {} backup'.format(theme_type))
+        print('the program made this session already!!!')
+        print('Would you like to continue and overwrite previous?')
+        if not is_affirmative():
+            print('Not installed.......')
+            return True
+    else:
+        os.mkdir('{}/{}'.format(backup_dir, theme_type))
+        return False
+
+#########################################################
+## ============= Installer Support Funcs ============= ##
+#########################################################
+def mark_self_installed():      # Creates a file letting the auto installer know if a self theme installed
+    DebugPrint("mark_self_installed() called", fromprocess_input="sf")
+    DebugPrint("Marking as self installed to /storage/emulated/0/op_tools_used'", fromprocess_input="sf")
+    if Dev_DoInstall() and not path.exists ('/storage/emulated/0/op_tools_used'):
+        f = open("/storage/emulated/0/op_tools_used.txt", "w")
+        f.close
+
+
+#########################################################
+##================= Installer Code =================== ##
+#########################################################
+def SET_STATIC_IP(DeviceData):
+    print("pass")
+
+## ================= Restor-er Code ================= ##
+def get_user_backups(exclude):  #Gets users backups in /sdcard/optools-backups
+    available_backups = [t for t in os.listdir(BACKUPS_DIR)]
+    available_backups = [t for t in available_backups if os.path.isdir(os.path.join(BACKUPS_DIR, t))]
+    available_backups = [t for t in available_backups if t not in exclude]
+    lower_available_backups = [t.lower() for t in available_backups]
+  
+    print('\nAvailable backups:')
+    for idx, backup in enumerate(available_backups):
+        print('{}. {}'.format(idx + 1, backup))
+    print('\nType `exit` or enter 0 to exit.')
+  
+    while 1:
+        backup = input('\nChoose a backup to install (by index value): ').strip().lower()
+        if backup in ['exit', 'Exit', 'E', 'e', '0']:
+            exit()
+        if backup.isdigit():
+            backup = int(backup)
+            if backup > len(available_backups):
+                print('Index out of range, try again!')
+                continue
+            return available_backups[int(backup) - 1]
+        else:
+            print('Please enter only Index number value!!')
+            continue
+
+#########################################################
+## ====================== Misc ======================= ##
+#########################################################
+def REBOOT():                   #Reboot EON Device
+    print('\nRebooting.... Thank You, Come Again!!!\n\n########END OF PROGRAM########\n')
+    os.system('am start -a android.intent.action.REBOOT')  # reboot intent is safer (reboot sometimes causes corruption)
+    sys.exit()
+
+def QUIT_PROG():                # Terminate Program friendly
+    print('\nThank you come again! You will see your changes next reboot!\n\n########END OF PROGRAM########\n')
+    sys.exit()  
+
+def str_sim(a, b):              # Part of @ShaneSmiskol's get_aval_themes code
+    return difflib.SequenceMatcher(a=a, b=b).ratio()
+
+#########################################################
+## ==================== DEV/Debug ==================== ##
+#########################################################
+def setVerbose(a=False):        #Set Verbosity (DEPRICATED)
+    if a == True:
+        con_output = ' >/dev/null 2>&1'  # string to surpress output
+    else:
+        con_output = ''  # string to surpress output
+    print('[DEBUG MSG]: Verbose ' + a)
+
+def DebugPrint(msg, fromprocess_input="null", overide=0, multi=0):  #My own utility for debug msgs
+    if VERBOSE == True or DEVMODE == True or overide == 1:
+        now = datetime.now()
+        debugtime = now.strftime("%m/%d %I:%M.%S")
+        runprocess = "theme_install.py"
+        fromprocess_input = runprocess if fromprocess_input == "null" else fromprocess_input
+        if fromprocess_input == "sf":
+            runprocess = (runprocess.strip(".py")+"/support/support_functions.py")
+
+        if type(multi) == list:
+            print("\n##[DEBUG][{} {}] || GOT MULTIPLE DATA".format(debugtime, runprocess))
+            print("##[DEBUG] {}".format(msg))
+            for x in range(len(multi)):
+                print("--> {}".format(multi[x])),
+        else:
+            print("##[DEBUG][{} {}] || {}".format(debugtime, runprocess, msg))#] #Debug Msg ()s
+
+def DEV_CHECK():                #Hault Program If Ran On PC/Mac
+    global DEV_PLATFORM, DEVMODE, VERBOSE
+    # Simple if PC check, not needed but nice to have
+    DEV_PLATFORM = platform.system()
+    if DEV_PLATFORM in ['Windows', 'Darwin']:
+        print(DEV_PLATFORM)
+        print("This program only works on Comma EONS & Comma Two, sorry...")
+        print("Press enter to exit.")
+        u = input('')
+        if u == "override":
+            print('EON DEVMODE enabled, proceed with great caution!')
+            VERBOSE = True
+            DEVMODE = True
+        else:
+            sys.exit()
+
+def Dev_DoInstall():            #Function to ask before installing for use in dev to not screw up my computer, and test logic
+    if DEVMODE == True:
+        DebugPrint("Developer Mode enabled do you actually want to install?", overide="sf")
+        DebugPrint("Type 'install' to install or press enter to skip.", overide="sf")
+        askinstall = input("## ").lower().strip()
+        if askinstall == "install":
+            return True
+        else:
+            DebugPrint("Install Skipped...", overide="sf")
+            return False
+    else:
+        return True

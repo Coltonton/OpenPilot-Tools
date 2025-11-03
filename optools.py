@@ -57,7 +57,7 @@ DeviceData = get_device_data()            # Init Device Data dict with device in
 class ToolUtility:
     def __init__(self):              #Init
         while True:
-            util_options = ['Set Static IP', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
+            util_options = ['IP Configuration (IPV4)', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
             selected_util = selector_picker(util_options, 'Select a Tool:')
 
             if   selected_util == 'IP Configuration (IPV4)':

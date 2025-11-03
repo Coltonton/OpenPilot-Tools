@@ -79,6 +79,13 @@ class ToolUtility:
         print(current_conn)
         print(all_con)
 
+        #Ask users what resources to install
+        print('\n*\nWhat resources do you want to install for the Custom theme?')
+        for idx, conn in enumerate(all_con):
+            print('{}. {}'.format(idx + 1, conn))
+        indexChoice = int(input("Enter Index Value: "))
+        indexChoice -= 1 
+
 
 
         SET_STATIC_IP(DeviceData)

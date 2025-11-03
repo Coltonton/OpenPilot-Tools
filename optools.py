@@ -109,7 +109,7 @@ class ToolUtility:
             if(user_selection == stripped_current_conn):
                 editing_active=True
                 DebugPrint('User is editing current config!') 
-                print("\n*\n\033[31m**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!\033[0m   ")
+                print("\n\n\033[31m**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!\033[0m   ")
                 print('What to do with connection [{}] *ACTIVE*:'.format(user_selection))
             else:
                 editing_active=False
@@ -121,11 +121,8 @@ class ToolUtility:
             ip_set = ip_options[indexChoice]
             DebugPrint('User Selected: {}'.format(ip_set))
 
-            if user_selection == '-Reboot-':
-                REBOOT()
-            elif user_selection == '-Quit-' or user_selection is None:
-                QUIT_PROG() 
-            elif user_selection == 'Set Static':
+            
+            if ip_set == 'Set Static':
                 user_ip = input(f"Enter IP [{conn_ip}]: ") or conn_ip
                 user_subnet = input(f"Enter Subnet [{"255.255.255.0"}]: ") or "255.255.255.0"
                 user_gateway = input(f"Enter Gateway (Router) [{"192.168.1.1"}]: ") or "192.168.1.1"
@@ -134,8 +131,12 @@ class ToolUtility:
                 print("\n**WARNING: CONNECTION WILL DROP, AND DEVICE WILL REBOOT!")
                 subprocess.run(f'nmcli con mod "{selected_conn_name}" ipv4.addresses {user_cidr} 'f'ipv4.gateway {user_gateway} ipv4.dns {user_dns} ipv4.method manual', shell=True, check=True)
                 REBOOT()
-            elif user_selection == 'Set DHCP':
+            elif ip_set == 'Set DHCP':
                 subprocess.run(f'nmcli con mod "{selected_conn_name}" ipv4.method auto', shell=True, check=True)
+            elif ip_set == '-Reboot-':
+                REBOOT()
+            elif ip_set == '-Quit-' or user_selection is None:
+                QUIT_PROG() 
             
 
         SET_STATIC_IP(DeviceData)

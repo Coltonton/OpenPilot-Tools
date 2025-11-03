@@ -74,6 +74,7 @@ class ToolUtility:
         conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip()
         # Get current connection name
         current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()
+        stripped_current_conn = [current_conn.split("connection", 1)[1].strip()]
         # Get all connection names
         all_con = subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines()
         all_con = [c for c in all_con if "connection" in c]
@@ -83,6 +84,7 @@ class ToolUtility:
 
         DebugPrint('current_IP: {}'.format(conn_ip))
         DebugPrint('current_conn: {}'.format(current_conn))
+        DebugPrint('stripped_current_conn: {}'.format(stripped_current_conn))
         DebugPrint('stripped_all_con: {}'.format(stripped_all_con))
         DebugPrint('all_con: {}'.format(all_con))
 
@@ -104,7 +106,7 @@ class ToolUtility:
             ip_options=["Set Static", "Set DHCP", "-Reboot-", "-Quit-"]  
             DebugPrint('selected_conn_name: {}'.format(selected_conn_name)) 
 
-            if(user_selection == current_conn):
+            if(user_selection == stripped_current_conn):
                 editing_active=True
                 DebugPrint('User is editing current config!') 
                 print("\n*\nWARNING: You are currently editing the active connection, connection WILL drop upon submission!!")

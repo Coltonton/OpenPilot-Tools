@@ -58,7 +58,7 @@ class ToolUtility:
     def __init__(self):              #Init
         while True:
             util_options = ['Set Static IP', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
-            selected_util = selector_picker(util_options, 'This Is a Test')
+            selected_util = selector_picker(util_options, 'Select a Tool:')
 
             if   selected_util == 'Set Static IP':
                 self.SetStaticIP()
@@ -102,6 +102,12 @@ class ToolUtility:
         else:
             selected_conn_name = all_con[indexChoice]   
             DebugPrint('selected_conn_name: {}'.format(selected_conn_name)) 
+
+            user_input = input(f"Enter IP [{conn_ip}]: ") or conn_ip
+            user_ip = input('\nEnter your desired IP (192.168.1.69): ')
+            user_subnet = input('\nEnter your Subnet Mask (255.255.255.0) : ')
+            user_gateway = input('\nEnter your networks Gateway (192.168.1.1): ')
+            get_cidr(user_ip, user_subnet)
 
         SET_STATIC_IP(DeviceData)
 

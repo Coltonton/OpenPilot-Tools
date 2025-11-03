@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, time, platform, difflib, json
+import os, sys, time, platform, difflib, json, ipaddress
 from os import path
 from datetime import datetime
 from support.support_variables import *
@@ -125,6 +125,13 @@ def mark_self_installed():      # Creates a file letting the auto installer know
         f = open("/storage/emulated/0/op_tools_used.txt", "w")
         f.close
 
+def get_cidr(IP, SUBNET):
+    # Convert to prefix length automatically
+    prefix_length = ipaddress.IPv4Network(f"0.0.0.0/{SUBNET}").prefixlen
+
+    cidr = f"{IP}/{prefix_length}"
+    DebugPrint('generated CIDR: {}'.format(cidr), fromprocess_input="sf")
+    return(cidr)
 
 #########################################################
 ##================= Installer Code =================== ##

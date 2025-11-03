@@ -83,7 +83,8 @@ class ToolUtility:
         print('\n*\nWhat connection would you like to edit?')
         for idx, conn in enumerate(stripped_all_con + ['-Main Menu-', '-Reboot-', '-Quit-']):
             print('{}. {}'.format(idx + 1, conn))
-        user_selection = stripped_all_con[int(input("Enter Index Value: ")) - 1 ]
+        indexChoice = int(input("Enter Index Value: ")) - 1 
+        user_selection = stripped_all_con[indexChoice]
         DebugPrint('User Selected: {}'.format(user_selection))
         
         if user_selection == '-Main Menu-':

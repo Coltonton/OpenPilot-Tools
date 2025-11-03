@@ -20,7 +20,7 @@ def get_device_data(onprocess='null'):         # Get and set the data based on d
             "DEVICE_TYPE"          : info["device_type"]                   # EON type
         }
     print('Detected device: {}'.format(devicedata["DEVICE_TYPE"]))
-    print('IMPORTANT: {}-bricking is likely if this detection is incorrect!'.format("Soft" if not DEVMODE else "SEVERE"))
+    print('IMPORTANT: {}-bricking is possible if this detection is incorrect!'.format("Soft" if not DEVMODE else "SEVERE"))
 
     if not DEVMODE:
         time.sleep(4)  # Pause for suspense, and so can be read
@@ -121,7 +121,22 @@ def check_colorama():
         subprocess.check_call([
             sys.executable, "-m", "pip", "install", "--user", "colorama"
         ])
-
+def HANDLE_MENU(selection):
+    if selection == "-Main Menu-":
+        return
+    elif selection == "-Reboot-":
+        REBOOT()
+    elif selection == "-Quit-":
+        QUIT_PROG()
+    else:
+        print("No Input recived...")
+        return
+    
+def PRINT_MENU(menu_opts):
+    for idx, var in enumerate(menu_opts + MENU_LIST):
+        print('{}. {}'.format(idx + 1, var))
+    retval = int(input("Enter Index Value: ")) - 1
+    return retval
 
 #########################################################
 ## ============= Installer Support Funcs ============= ##

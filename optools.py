@@ -37,7 +37,7 @@
  #                                                                                #
  #                                                                                #
 ##################################################################################
-from support.support_variables import OPENPILOT_TOOLS_VER, IP_OPTIONS
+from support.support_variables import OPENPILOT_TOOLS_VER, IP_OPTIONS, MENU_LIST
 print('OpenPilot Tools Version '+ OPENPILOT_TOOLS_VER)
 
 import os, time, subprocess, importlib.util
@@ -76,48 +76,29 @@ class ToolUtility:
         conn_ip="0.0.0.0"
         
         current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()            # Get current connection name
-        all_con = [c for c in subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines() if "connection" in c]    # Get all actual connection names                                                                    
-        stripped_all_con = [c.split("connection", 1)[1].strip() for c in all_con]                                                                              # Strip Out SSID's
+        all_connections = [c for c in subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines() if "connection" in c]    # Get all actual connection names                                                                    
+        stripped_all_connections = [c.split("connection", 1)[1].strip() for c in all_connections]                                                                              # Strip Out SSID's
 
         #Ask users what resources to do
-        print('\n*\nWhat connection would you like to edit?')
-        for idx, conn in enumerate(stripped_all_con + ['-Main Menu-', '-Reboot-', '-Quit-']):
-            print('{}. {}'.format(idx + 1, conn))
-        indexChoice = int(input("Enter Index Value: ")) - 1 
-        user_selection = stripped_all_con[indexChoice]
-        DebugPrint('User Selected: {}'.format(user_selection))
+        print(Fore.CYAN + '\n*\nWhat connection would you like to edit?')
+        indexChoice = PRINT_MENU(stripped_all_connections)
+        user_selection = stripped_all_connections[indexChoice]
         
-        if user_selection == '-Main Menu-':
-            return
-        elif user_selection == '-Reboot-':
-            REBOOT()
-        elif user_selection == '-Quit-' or user_selection is None:
-            QUIT_PROG() 
-        else:
-            connection_to_edit = all_con[indexChoice] 
-            DebugPrint('connection_to_edit: {}'.format(connection_to_edit)) 
-            connection_to_edit = all_con[indexChoice] 
-
-            if(user_selection == current_conn.split("connection", 1)[1].strip()):                  #If the user has chosen to edit the config of the current connection
-                is_editing_active=True
-                DebugPrint('User is editing current config!') 
-                print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!')
+        if user_selection in MENU_LIST or None:                                      #If user selection is a Menu Item
+            HANDLE_MENU(user_selection)                                                  #Handle the menu selection
+        else:                                                                        #If user selection is not a Menu Item but a program selection
+            connection_to_edit = all_connections[indexChoice]                            #Set the Connection_to_edit var based on the corrosponding all_connections index
+            if(user_selection == current_conn.split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
+                is_editing_active=True                                                                #Var to set if user is editing active configuration
                 conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip() # Get current connection IP
-            
-             
-            print('\n*\nWhat to do with [{}]:'.format(connection_to_edit))
-            for idy, ipsel in enumerate(IP_OPTIONS):
-                print('{}. {}'.format(idy + 1, ipsel))
-            indexChoice = int(input("Enter Index Value: ")) - 1
-            ip_set = IP_OPTIONS[indexChoice]
+                print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!')
+            print(Fore.CYAN + '\n*\nWhat to do with [{}]:'.format(connection_to_edit))
+            indexChoice = PRINT_MENU(IP_OPTIONS)                                         #Print the given selections in a menu format and save the index choice
+            ip_mode = IP_OPTIONS[indexChoice]                                            #Set the ip_mode var based on the corrosponding IP_OPTIONS index
 
-            if ip_set == '-Main Menu-':
-                return
-            elif ip_set == '-Reboot-':
-                REBOOT()
-            elif ip_set == '-Quit-' or ip_set is None:
-                QUIT_PROG() 
-            elif(ip_set=="Static"):
+            if user_selection in MENU_LIST or None:                                      #If user selection is a Menu Item
+                HANDLE_MENU(user_selection)                                                 #Handle the menu selection
+            elif(ip_mode=="Static"):                                                     #If user selection is not a Menu Item but a program selection
                 user_ip      = input(f"Enter IP or ENTER for [{conn_ip}]: ") or conn_ip
                 user_subnet  = input(f"Enter Subnet or ENTER for [{"255.255.255.0"}]: ") or "255.255.255.0"
                 user_gateway = input(f"Enter Gateway (Router) or ENTER for [{"192.168.1.1"}]: ") or "192.168.1.1"
@@ -125,7 +106,7 @@ class ToolUtility:
                 if(is_editing_active):
                     print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
                 SET_IP('Static', connection_to_edit, is_editing_active, user_ip_cidr, user_gateway)       #Call the Set_IP Function as Static to begin, requires MODE[Static/DHCP], Selected Connection Name, IP in CIDR format, and Gateway
-            elif(ip_set=="DHCP"):
+            elif(ip_mode=="DHCP"):
                 if(is_editing_active):
                     print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
                 SET_IP('DHCP', connection_to_edit, is_editing_active, "", "")                                 #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name

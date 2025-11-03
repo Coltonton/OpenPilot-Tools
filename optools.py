@@ -129,6 +129,7 @@ class ToolUtility:
                 user_dns = input(f"Enter DNS [{"1.1.1.1"}]: ") or "1.1.1.1"
                 user_cidr=get_cidr(user_ip, user_subnet)
                 print("\n**WARNING: CONNECTION WILL DROP, AND DEVICE WILL REBOOT!")
+                print("\n\n\033[31m**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!\033[0m   ")
                 subprocess.run(f'nmcli con mod "{selected_conn_name}" ipv4.addresses {user_cidr} 'f'ipv4.gateway {user_gateway} ipv4.dns {user_dns} ipv4.method manual', shell=True, check=True)
                 REBOOT()
             elif ip_set == 'Set DHCP':

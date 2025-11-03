@@ -19,7 +19,8 @@ def get_device_data(onprocess='null'):         # Get and set the data based on d
     devicedata = {
             "DEVICE_TYPE"          : info["device_type"]                   # EON type
         }
-    print(devicedata)
+    print(devicedata["DEVICE_TYPE"])
+    print('Detected device: {}-'.format(devicedata["DEVICE_TYPE"]))
     print('IMPORTANT: {}-bricking is likely if this detection is incorrect!'.format("Soft" if not DEVMODE else "SEVERE"))
 
     if not DEVMODE:

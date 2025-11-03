@@ -70,7 +70,6 @@ class ToolUtility:
                 QUIT_PROG()
 
     def SetStaticIP(self):
-        backup_dir = make_backup_folder()
         SET_STATIC_IP(DeviceData)
 
     '''def Install_From_Loc(self):      #Install a custom theme from custom location

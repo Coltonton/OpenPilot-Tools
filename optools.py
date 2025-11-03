@@ -37,7 +37,7 @@
  #                                                                                #
  #                                                                                #
 ##################################################################################
-from support.support_variables import OPENPILOT_TOOLS_VER, IP_OPTIONS, MENU_LIST
+from support.support_variables import OPENPILOT_TOOLS_VER, IP_OPTIONS, MENU_LIST, DNS_OPTIONS
 print('OpenPilot Tools Version '+ OPENPILOT_TOOLS_VER)
 
 import os, time, subprocess, importlib.util
@@ -77,16 +77,15 @@ class ToolUtility:
         is_editing_active=False
         conn_ip="0.0.0.0"
         connectiondata = {}
+
         connectiondata, indexChoice = get_wlan_connections()
-        if indexChoice:                                                               #If user selection is a valid program selection
-            user_selection = (connectiondata["stripped_all_connections"])[indexChoice]     #Set the user_selection var based on the corrosponding stripped_all_connections index
-            connection_to_edit = (connectiondata["all_connections"])[indexChoice]          #Set the Connection_to_edit var based on the corrosponding all_connections index
-            if(user_selection == connectiondata["current_connection"].split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
+        if indexChoice:                                                                #If user selection is a valid program selection
+            if(connectiondata["user_selection"] == connectiondata["current_connection"].split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
                 is_editing_active=True                                                                #Var to set if user is editing active configuration
                 conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip() # Get current connection IP
                 print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!')
-            indexChoice2, ip_mode = PRINT_MENU((Fore.CYAN + '\n*\nWhat to do with [{}]:'.format(connection_to_edit) + Style.RESET_ALL), IP_OPTIONS)       
             
+            indexChoice2, ip_mode = PRINT_MENU((Fore.CYAN + '\n*\nWhat to do with [{}]:'.format(connectiondata["connection_to_edit"]) + Style.RESET_ALL), IP_OPTIONS)       
             if indexChoice2:
                 if(ip_mode=="Static"):                                                   #If user wants to set Static IP
                     user_ip      = input(f"Enter IP or ENTER for [{conn_ip}]: ") or conn_ip                   #Get desired network IP
@@ -96,25 +95,46 @@ class ToolUtility:
                     if(is_editing_active):                                                                    #If user is editing the active connection, show warning
                         print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
                     if not APPLY_CHANGES(): return                                                            #If user gives affermation
-                    SET_IP('Static', connection_to_edit, is_editing_active, generated_ip_cidr, user_gateway)  #Call the Set_IP Function as Static to begin, requires MODE[Static/DHCP], Selected Connection Name, IP in CIDR format, and Gateway
+                    SET_IP('Static', connectiondata["connection_to_edit"], is_editing_active, generated_ip_cidr, user_gateway)  #Call the Set_IP Function as Static to begin, requires MODE[Static/DHCP], Selected Connection Name, IP in CIDR format, and Gateway
                 elif(ip_mode=="DHCP"):                                                   #If user wants to set DHCP
                     if(is_editing_active):                                                                    #If user is editing the active connection, show warning
                         print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
                     if not APPLY_CHANGES(): return                                                            #If user gives affermation
-                    SET_IP('DHCP', connection_to_edit, is_editing_active, "", "")                             #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name
+                    SET_IP('DHCP', connectiondata["connection_to_edit"], is_editing_active, "", "")                             #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name
 
     def DNS_Config(self):
         is_editing_active=False
+        default_dns="1.1.1.1"
         connectiondata = {}
+
         connectiondata, indexChoice = get_wlan_connections()
-        if indexChoice:                                                               #If user selection is a valid program selection
-            user_selection = (connectiondata["stripped_all_connections"])[indexChoice]     #Set the user_selection var based on the corrosponding stripped_all_connections index
-            connection_to_edit = (connectiondata["all_connections"])[indexChoice]        #Set the Connection_to_edit var based on the corrosponding all_connections index
-            if(user_selection == connectiondata["current_connection"].split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
+        if indexChoice:                                                                #If user selection is a valid program selection
+            if(connectiondata["user_selection"] == connectiondata["current_connection"].split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
                 is_editing_active=True                                                                #Var to set if user is editing active configuration
-                conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip() # Get current connection IP
                 print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection MAY drop upon submission!!')
-              
+
+            dns_output = subprocess.check_output(f'nmcli -g ipv4.dns connection show "{(connectiondata["connection_to_edit"])}"', shell=True, text=True)
+            existing_dns_servers = [dns.strip() for dns in dns_output.split(',')]
+            indexChoice2, ip_mode = PRINT_MENU((Fore.CYAN + '\n*\nWhat to do with [{}]:'.format(connectiondata["connection_to_edit"]) + Style.RESET_ALL), DNS_OPTIONS)  
+            if indexChoice2:
+                if(ip_mode=="Add DNS Entry"):  
+                    # Get User Added DNS
+                    user_dns = input(f"Enter DNS to add {existing_dns_servers}: ")                    #Get desired network IP
+                    if user_dns == None: return
+
+                    # Combine existing DNS with the new one
+                    for dns in existing_dns_servers:
+                        dns_string += dns + " "  # add a space after each
+                    new_dns_servers = dns_string + user_dns # remove trailing space
+
+                    # Update the connection with the new DNS list
+                    subprocess.run(f'nmcli connection modify "{connectiondata["connection_to_edit"]}" ipv4.dns "{new_dns_servers}"', shell=True, check=True)
+
+                elif(ip_mode=="Remove DNS Entry"):
+                    pass
+
+                elif(ip_mode=="Create New DNS Entry"):
+                    pass
 
     def Cleanup_Files(self):         #Remove all traces of OP Tools
         #Print hAllo message

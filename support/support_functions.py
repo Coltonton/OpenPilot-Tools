@@ -93,14 +93,14 @@ def PRINT_MENU(title, menu_opts):
     except IndexError:
         selection = (menu_opts + MENU_LIST)[index]
         if selection == "-Main Menu-":
-            return
+            return None, None
         elif selection == "-Reboot-":
             REBOOT()
         elif selection == "-Quit-":
             QUIT_PROG()
         else:
             print("No Input recived...")
-            return
+            return None, None
     return index, value
 
 def APPLY_CHANGES():
@@ -128,14 +128,21 @@ def get_wlan_connections():
 
 
     indexChoice, wlan0_selection = PRINT_MENU((Fore.CYAN + '\n*\nWhat connection would you like to edit?' + Style.RESET_ALL), stripped_all_connections)           # Print menu with title, and selections 
+    if indexChoice:
+        user_selection = (connectiondata["stripped_all_connections"])[indexChoice]     #Set the user_selection var based on the corrosponding stripped_all_connections index
+        connection_to_edit = (connectiondata["all_connections"])[indexChoice]          #Set the Connection_to_edit var based on the corrosponding all_connections index
 
-    connectiondata = {
-            "current_connection"       : current_connection,
-            "all_connections"          : all_connections,
-            "stripped_all_connections" : stripped_all_connections,
-            "selected_connection"      : wlan0_selection}
-    
-    return connectiondata, indexChoice
+        connectiondata = {
+                "current_connection"       : current_connection,
+                "all_connections"          : all_connections,
+                "stripped_all_connections" : stripped_all_connections,
+                "selected_connection"      : wlan0_selection,
+                "user_selection"           : user_selection,
+                "connection_to_edit"      : connection_to_edit}
+        
+        return connectiondata, indexChoice
+    else:
+        return None, None
 
 #########################################################
 ##================= Installer Code =================== ##

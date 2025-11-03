@@ -9,6 +9,7 @@ IS_AFFIRMATIVE_YES = ['yes', 'ye', 'y', '1', "j", "ja", "si", "s"]
 IS_AFFIRMATIVE_UNSURE = ['i guess', 'sure', 'fine', 'whatever', 'idk', 'why', "uh", "um", "...", "bite me", "eat my shorts"]
 MENU_LIST= ["-Main Menu-", "-Reboot-", "-Quit-"]
 IP_OPTIONS=["Static", "DHCP"]
+DNS_OPTIONS=["Create New DNS Entry", "Add DNS Entry", "Remove DNS Entry"]
 
 # ==============  Backup related vars ============== ##
 BACKUPS_DIR = '/storage/emulated/0/optools-backups' if not DEVMODE else './test-tools-backups'

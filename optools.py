@@ -82,7 +82,7 @@ class ToolUtility:
         #Ask users what resources to do
         print(Fore.CYAN + '\n*\nWhat connection would you like to edit?' + Style.RESET_ALL)
         indexChoice = PRINT_MENU(stripped_all_connections)
-        user_selection = stripped_all_connections + MENU_LIST[indexChoice]
+        user_selection = (stripped_all_connections + MENU_LIST)[indexChoice]
         
         if user_selection in MENU_LIST or None:                                      #If user selection is a Menu Item
             HANDLE_MENU(user_selection)                                                  #Handle the menu selection

@@ -60,7 +60,7 @@ class ToolUtility:
     def __init__(self):              #Init
         while True:
             util_options = ['IP Configuration (IPV4)', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
-            selected_util = selector_picker(util_options, Fore.RED + '**Main Menu**' + Fore.CYAN + 'Select a Tool:' + Style.RESET_ALL)
+            selected_util = selector_picker(util_options, Fore.RED + '**Main Menu**\n' + Fore.CYAN + 'Select a Tool:' + Style.RESET_ALL)
 
             if   selected_util == 'IP Configuration (IPV4)':
                 self.IPV4_Config()
@@ -82,11 +82,11 @@ class ToolUtility:
         #Ask users what resources to do
         print(Fore.CYAN + '\n*\nWhat connection would you like to edit?' + Style.RESET_ALL)
         indexChoice = PRINT_MENU(stripped_all_connections)
-        user_selection = stripped_all_connections[indexChoice]
         
         if user_selection in MENU_LIST or None:                                      #If user selection is a Menu Item
             HANDLE_MENU(user_selection)                                                  #Handle the menu selection
         else:                                                                        #If user selection is not a Menu Item but a program selection
+            user_selection = stripped_all_connections[indexChoice]
             connection_to_edit = all_connections[indexChoice]                            #Set the Connection_to_edit var based on the corrosponding all_connections index
             if(user_selection == current_conn.split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
                 is_editing_active=True                                                                #Var to set if user is editing active configuration

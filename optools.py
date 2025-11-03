@@ -109,7 +109,7 @@ class ToolUtility:
             if(user_selection == stripped_current_conn):
                 editing_active=True
                 DebugPrint('User is editing current config!') 
-                print("\n*\nWARNING: You are currently editing the active connection, connection WILL drop upon submission!!")
+                print("\n*\n\033[31m**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!\033[0m   ")
                 print('What to do with connection [{}] *ACTIVE*:'.format(user_selection))
             else:
                 editing_active=False

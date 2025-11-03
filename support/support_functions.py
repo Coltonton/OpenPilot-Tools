@@ -118,7 +118,9 @@ def backup_overide_check(backup_dir, theme_type):    # Check if there was a back
 def check_colorama():
     if not importlib.util.find_spec("colorama") is not None:
         print("colorama is NOT installed") 
-        sys.executable, "-m", "pip", "install", "--user", "colorama"
+        subprocess.check_call([
+            sys.executable, "-m", "pip", "install", "--user", "colorama"
+        ])
 
 
 #########################################################

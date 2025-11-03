@@ -70,6 +70,8 @@ class ToolUtility:
                 QUIT_PROG()
 
     def SetStaticIP(self):
+        # Get current connection IP
+        conn_ip = subprocess.check_output(f"ip -4 addr show {"wlan0"} | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}'", shell=True, text=True).strip()
         # Get current connection name
         current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()
         # Get all connection names
@@ -79,24 +81,25 @@ class ToolUtility:
         stripped_all_con.append('-Reboot-')
         stripped_all_con.append('-Quit-')
 
-        print(current_conn)
-        print(all_con)
+        DebugPrint('current_conn: {}'.format(current_conn))
+        DebugPrint('all_con: {}'.format(all_con))
 
-        #Ask users what resources to install
+        #Ask users what resources to do
         print('\n*\nWhat connection would you like to set static IP for?')
         for idx, conn in enumerate(stripped_all_con):
             print('{}. {}'.format(idx + 1, conn))
         indexChoice = int(input("Enter Index Value: "))
         indexChoice -= 1 
-        selected_option = stripped_all_con[indexChoice]
-        print(selected_option)
+        user_selection = stripped_all_con[indexChoice]
+        DebugPrint('User Selected: {}'.format(user_selection))
         
-        if selected_option   == 1:
-            print("selected inedx 1")
-        elif selected_option == '-Reboot-':
+        if user_selection == '-Reboot-':
             REBOOT()
-        elif selected_option == '-Quit-' or selected_option is None:
-            QUIT_PROG()        
+        elif user_selection == '-Quit-' or selected_conn_name is None:
+            QUIT_PROG() 
+        else:
+            selected_conn_name = all_con[indexChoice]   
+            DebugPrint('selected_conn_name: {}'.format(selected_conn_name)) 
 
         SET_STATIC_IP(DeviceData)
 

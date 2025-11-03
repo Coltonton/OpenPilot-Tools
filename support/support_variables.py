@@ -2,7 +2,7 @@
 # ===================  Misc vars =================== ##
 OPENPILOT_TOOLS_VER = "0.1"                 # This Softwares Version
 #SHOW_CONSOLE_OUTPUT = False                # Show the console output when 'make' is called?
-VERBOSE = False
+VERBOSE = True
 DEVMODE = False
 DEV_PLATFORM = ""
 IS_AFFIRMATIVE_YES = ['yes', 'ye', 'y', '1', "j", "ja", "si", "s"]

@@ -82,21 +82,26 @@ def check_colorama():
         ])
 
 def HANDLE_MENU(selection):
-    if selection == "-Main Menu-":
-        return
-    elif selection == "-Reboot-":
-        REBOOT()
-    elif selection == "-Quit-":
-        QUIT_PROG()
-    else:
-        print("No Input recived...")
-        return
+    pass
     
 def PRINT_MENU(menu_opts):
     for idx, var in enumerate(menu_opts + MENU_LIST):
         print('{}. {}'.format(idx + 1, var))
-    retval = int(input("Enter Index Value: ")) - 1
-    return retval
+    index = int(input("Enter Index Value: ")) - 1
+    try:
+        value = menu_opts[index]
+    except IndexError:
+        selection = (menu_opts + MENU_LIST)[index]
+        if selection == "-Main Menu-":
+            return
+        elif selection == "-Reboot-":
+            REBOOT()
+        elif selection == "-Quit-":
+            QUIT_PROG()
+        else:
+            print("No Input recived...")
+            return
+    return index
 
 def APPLY_CHANGES():
     print('\nApply changes?')
@@ -116,6 +121,10 @@ def get_cidr(IP, SUBNET):
     cidr = f"{IP}/{prefix_length}"
     DebugPrint('generated CIDR: {}'.format(cidr), fromprocess_input="sf")
     return(cidr)
+def get_wlan_connections():
+    current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()            # Get current connection name
+    all_connections = [c for c in subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines() if "connection" in c]    # Get all actual connection names                                                                    
+    stripped_all_connections = [c.split("connection", 1)[1].strip() for c in all_connections]                                                                              # Strip Out SSID's
 
 #########################################################
 ##================= Installer Code =================== ##

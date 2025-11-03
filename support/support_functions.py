@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import os, sys, time, platform, difflib, json
 from os import path
 from datetime import datetime
@@ -19,6 +19,7 @@ def get_device_data(onprocess='null'):         # Get and set the data based on d
     devicedata = {
             "DEVICE_TYPE"          : info["device_type"]                   # EON type
         }
+    print(devicedata)
     print('IMPORTANT: {}-bricking is likely if this detection is incorrect!'.format("Soft" if not DEVMODE else "SEVERE"))
 
     if not DEVMODE:
@@ -166,7 +167,7 @@ def REBOOT():                   #Reboot EON Device
     sys.exit()
 
 def QUIT_PROG():                # Terminate Program friendly
-    print('\nThank you come again! You will see your changes next reboot!\n\n########END OF PROGRAM########\n')
+    print('\nThank you come again! You may need to reboot to see changes!\n\n########END OF PROGRAM########\n')
     sys.exit()  
 
 def str_sim(a, b):              # Part of @ShaneSmiskol's get_aval_themes code

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # ===================  Misc vars =================== ##
 OPENPILOT_TOOLS_VER = "0.1"                 # This Softwares Version
 #SHOW_CONSOLE_OUTPUT = False                # Show the console output when 'make' is called?

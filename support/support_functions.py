@@ -101,7 +101,7 @@ def PRINT_MENU(title, menu_opts):
         else:
             print("No Input recived...")
             return
-    return index
+    return index, value
 
 def APPLY_CHANGES():
     print('\nApply changes?')
@@ -126,12 +126,15 @@ def get_wlan_connections():
     all_connections = [c for c in subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines() if "connection" in c]    # Get all actual connection names                                                                    
     stripped_all_connections = [c.split("connection", 1)[1].strip() for c in all_connections]                                                    # Strip Out SSID's
 
-    connectiondata = {
-            "current_connection"      : current_connection,
-            "all_connections"          : all_connections,
-            "stripped_all_connections" : stripped_all_connections}
 
-    indexChoice = PRINT_MENU((Fore.CYAN + '\n*\nWhat connection would you like to edit?' + Style.RESET_ALL), stripped_all_connections)           # Print menu with title, and selections 
+    indexChoice, wlan0_selection = PRINT_MENU((Fore.CYAN + '\n*\nWhat connection would you like to edit?' + Style.RESET_ALL), stripped_all_connections)           # Print menu with title, and selections 
+
+    connectiondata = {
+            "current_connection"       : current_connection,
+            "all_connections"          : all_connections,
+            "stripped_all_connections" : stripped_all_connections,
+            "selected_connection"      : wlan0_selection}
+    
     return connectiondata, indexChoice
 
 #########################################################

@@ -122,12 +122,12 @@ def get_cidr(IP, SUBNET):
     DebugPrint('generated CIDR: {}'.format(cidr), fromprocess_input="sf")
     return(cidr)
 def get_wlan_connections():
-    current_connections = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()   # Get current connection name
+    current_connection = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()   # Get current connection name
     all_connections = [c for c in subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines() if "connection" in c]    # Get all actual connection names                                                                    
     stripped_all_connections = [c.split("connection", 1)[1].strip() for c in all_connections]                                                    # Strip Out SSID's
 
     connectiondata = {
-            "current_connections"      : current_connections,
+            "current_connection"      : current_connection,
             "all_connections"          : all_connections,
             "stripped_all_connections" : stripped_all_connections}
 

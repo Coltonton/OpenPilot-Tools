@@ -79,7 +79,7 @@ class ToolUtility:
         if indexChoice:                                                               #If user selection is a valid program selection
             user_selection = (connectiondata["stripped_all_connections"])[indexChoice]     #Set the user_selection var based on the corrosponding stripped_all_connections index
             connection_to_edit = (connectiondata["all_connections"])[indexChoice]        #Set the Connection_to_edit var based on the corrosponding all_connections index
-            if(user_selection == connectiondata["current_conn"].split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
+            if(user_selection == connectiondata["current_connection"].split("connection", 1)[1].strip()):        #If the user has chosen to edit the config of the current connection
                 is_editing_active=True                                                                #Var to set if user is editing active configuration
                 conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip() # Get current connection IP
                 print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!')

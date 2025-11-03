@@ -76,13 +76,16 @@ class ToolUtility:
         all_con = subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines()
         all_con = [c for c in all_con if "connection" in c]
         stripped_all_con = [c.split("connection", 1)[1].strip() for c in all_con]
-        all_con.append('-Reboot-')
-        all_con.append('-Quit-')
+        stripped_all_con.append('-Reboot-')
+        stripped_all_con.append('-Quit-')
+
+        print(current_conn)
+        print(all_con)
 
         #Ask users what resources to install
         print('\n*\nWhat connection would you like to set static IP for?')
         for idx, conn in enumerate(stripped_all_con):
-            print('{}. {}'.format(idx + 1, stripped_all_con))
+            print('{}. {}'.format(idx + 1, conn))
         indexChoice = int(input("Enter Index Value: "))
         indexChoice -= 1 
 

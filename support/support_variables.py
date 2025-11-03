@@ -18,6 +18,7 @@ MIN_SIM_THRESHOLD = 0.25      # user's input needs to be this percent or higher 
 # =========== Get OP Ver & Location vars =========== ##
 OP_Version = 0.0
 OP_Location = ''
+IP_OPTIONS=["Set Static", "Set DHCP", "-Main Menu-", "-Reboot-", "-Quit-"] 
 
 # ===================== Texts ====================== ##
 WELCOME_TEXT = ['Created By: Colton (Brandon) S @D3ADCRU7R',

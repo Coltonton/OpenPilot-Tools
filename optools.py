@@ -37,14 +37,16 @@
  #                                                                                #
  #                                                                                #
 ##################################################################################
-from support.support_variables import OPENPILOT_TOOLS_VER
+from support.support_variables import OPENPILOT_TOOLS_VER, IP_OPTIONS
 print('OpenPilot Tools Version '+ OPENPILOT_TOOLS_VER)
 
-import os
-import time, subprocess
+import os, time, subprocess, importlib.util
 from os import path
 from support.support_functions import *
 from support.support_variables import CLEANUP_TEXT, UTIL_WELCOME_TEXT
+
+check_colorama()
+from colorama import Fore, Back, Style
 
 ######################################################################################################
 ##======================= CODE START ================================================================#
@@ -58,7 +60,7 @@ class ToolUtility:
     def __init__(self):              #Init
         while True:
             util_options = ['IP Configuration (IPV4)', 'Cleanup for uninstall', '-Reboot-', '-Quit-']
-            selected_util = selector_picker(util_options, 'Select a Tool:')
+            selected_util = selector_picker(util_options, '\033[31m**Main Menu**\033[0m\nSelect a Tool:')
 
             if   selected_util == 'IP Configuration (IPV4)':
                 self.IPV4_Config()
@@ -70,156 +72,63 @@ class ToolUtility:
                 QUIT_PROG()
 
     def IPV4_Config(self):
-        # Get current connection IP
-        conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip()
-        # Get current connection name
-        current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()
-        stripped_current_conn = current_conn.split("connection", 1)[1].strip()
-        # Get all connection names
-        all_con = subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines()
-        all_con = [c for c in all_con if "connection" in c]
-        stripped_all_con = [c.split("connection", 1)[1].strip() for c in all_con]
-        stripped_all_con.append('-Reboot-')
-        stripped_all_con.append('-Quit-')
-
-        DebugPrint('current_IP: {}'.format(conn_ip))
-        DebugPrint('current_conn: {}'.format(current_conn))
-        DebugPrint('stripped_current_conn: {}'.format(stripped_current_conn))
-        DebugPrint('stripped_all_con: {}'.format(stripped_all_con))
-        DebugPrint('all_con: {}'.format(all_con))
+        is_editing_active=False
+        conn_ip="0.0.0.0"
+        
+        current_conn = subprocess.check_output("nmcli -t -f NAME,DEVICE connection show | grep wlan0 | cut -d: -f1", shell=True, text=True).strip()            # Get current connection name
+        all_con = [c for c in subprocess.check_output("nmcli -t -f NAME connection show", shell=True, text=True).strip().splitlines() if "connection" in c]    # Get all actual connection names                                                                    
+        stripped_all_con = [c.split("connection", 1)[1].strip() for c in all_con]                                                                              # Strip Out SSID's
 
         #Ask users what resources to do
         print('\n*\nWhat connection would you like to edit?')
-        for idx, conn in enumerate(stripped_all_con):
+        for idx, conn in enumerate(stripped_all_con + ['-Main Menu-', '-Reboot-', '-Quit-']):
             print('{}. {}'.format(idx + 1, conn))
-        indexChoice = int(input("Enter Index Value: "))
-        indexChoice -= 1 
-        user_selection = stripped_all_con[indexChoice]
+        user_selection = stripped_all_con[int(input("Enter Index Value: ")) - 1 ]
         DebugPrint('User Selected: {}'.format(user_selection))
         
-        if user_selection == '-Reboot-':
+        if user_selection == '-Main Menu-':
+            return
+        elif user_selection == '-Reboot-':
             REBOOT()
         elif user_selection == '-Quit-' or user_selection is None:
             QUIT_PROG() 
         else:
-            selected_conn_name = all_con[indexChoice] 
-            ip_options=["Set Static", "Set DHCP", "-Reboot-", "-Quit-"]  
-            DebugPrint('selected_conn_name: {}'.format(selected_conn_name)) 
+            connection_to_edit = all_con[indexChoice] 
+            DebugPrint('connection_to_edit: {}'.format(connection_to_edit)) 
+            connection_to_edit = all_con[indexChoice] 
 
-            if(user_selection == stripped_current_conn):
-                editing_active=True
+            if(user_selection == current_conn.split("connection", 1)[1].strip()):                  #If the user has chosen to edit the config of the current connection
+                is_editing_active=True
                 DebugPrint('User is editing current config!') 
-                print("\n\n\033[31m**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!\033[0m   ")
-                print('What to do with connection [{}] *ACTIVE*:'.format(user_selection))
-            else:
-                editing_active=False
-                print('\n*\nWhat to do with connection [{}]:'.format(user_selection))
-            for idy, ipsel in enumerate(ip_options):
-                print('{}. {}'.format(idy + 1, ipsel))
-            indexChoice = int(input("Enter Index Value: "))
-            indexChoice -= 1 
-            ip_set = ip_options[indexChoice]
-            DebugPrint('User Selected: {}'.format(ip_set))
-
-            if ip_set == '-Reboot-':
-                REBOOT()
-            elif ip_set == '-Quit-' or user_selection is None:
-                QUIT_PROG() 
-            else:
-                SET_STATIC_IP(ip_set, selected_conn_name, conn_ip,)
+                print(Fore.RED + '\n\n**WARNING: You are currently editing the active connection, connection WILL drop upon submission!!')
+                conn_ip = subprocess.check_output("nmcli -g IP4.ADDRESS device show wlan0 | cut -d/ -f1", shell=True, text=True).strip() # Get current connection IP
             
+             
+            print('\n*\nWhat to do with [{}]:'.format(connection_to_edit))
+            for idy, ipsel in enumerate(IP_OPTIONS):
+                print('{}. {}'.format(idy + 1, ipsel))
+            indexChoice = int(input("Enter Index Value: ")) - 1
+            ip_set = IP_OPTIONS[indexChoice]
 
-    '''def Install_From_Loc(self):      #Install a custom theme from custom location
-        backup_dir = make_backup_folder()
-        theme_options = []
- 
-        print('\n*')
-        print('What is the full path to your custom theme folder? ')
-        print('ex. /sdcard/mythemefolder')
-        install_folder = input('?: ')
-        
-        # cd /data/eon-custom-themes && exec ./theme_utils.py
-        # /data/eon-custom-themes/contributed-themes/Subaru
-        if path.exists('{}/OP3T-Logo/LOGO'.format(install_folder)) and DeviceData["EON_TYPE"] == 'OP3T':
-            theme_options.append('OP3T Boot Logo')
-        if path.exists('{}/LeEco-Logo/SPLASH'.format(install_folder)) and DeviceData["EON_TYPE"] == 'LeEco':
-            theme_options.append('LeEco Boot Logo')
-        if path.exists('{}/bootanimation.zip'.format(install_folder)):
-            theme_options.append('Boot Animation')
-        if path.exists('{}/spinner/img_spinner_comma.png'.format(install_folder)) or path.exists('{}/img_spinner_track.png'.format(install_folder)) or path.exists('{}/spinner.c'.format(install_folder)):
-            theme_options.append('OP Spinner')
-        theme_options.append('-Reboot-')
-        theme_options.append('-Quit-')
-    
-        while 1:
-            options = list(theme_options)  # this only contains available options from self.get_available_options
-            if not len(options):
-                print('\n*\nThe selected theme has no resources available for your device! Try another.')
-                time.sleep(2)
+            if ip_set == '-Main Menu-':
                 return
-        
-            #Ask users what resources to install
-            print('\n*\nWhat resources do you want to install for the Custom theme?')
-            for idx, theme in enumerate(options):
-                print('{}. {}'.format(idx + 1, theme))
-            indexChoice = int(input("Enter Index Value: "))
-            indexChoice -= 1 
-
-            selected_option = theme_options[indexChoice]
-
-            if selected_option  in ['Boot Animation', 'OP3T Boot Logo', 'LeEco Boot Logo', 'OP Spinner']:    
-                ##Confirm user wants to install asset
-                print('\nSelected to install the Custom {}. Continue?'.format(selected_option))
-                if not is_affirmative():
-                    continue       
-    
-            if selected_option   == 'Boot Animation':
-                ##Check if there was a boot ani backup already this session to prevent accidental overwrites
-                #Returns false if okay to proceed. Gets self.backup_dir & asset type name
-                if backup_overide_check(backup_dir, 'bootanimation.zip') == True:
-                    break
-
-                #Backup And install new bootanimation
-                install_from_path = (install_folder)
-                if Dev_DoInstall():
-                    INSTALL_BOOTANIMATION(backup_dir, install_from_path,)
-                    mark_self_installed()        # Create flag in /sdcard so auto installer knows there is a self installation
-                    print('Press enter to continue!')
-                    input()  
-            elif selected_option == 'OP Spinner':
-                ##Check if there was a spinner backup already this session to prevent accidental overwrites
-                #Returns false if okay to proceed. Gets self.backup_dir & asset type name
-                if backup_overide_check(backup_dir, 'spinner') == True:
-                    break
-
-                OP_INFO = get_OP_Ver_Loc()
-                DebugPrint("Got OP Location: {} and Version 0.{}".format(OP_INFO["OP_Location"], OP_INFO["OP_Version"]))
-
-                #Backup & Install
-                install_from_path = ("{}/spinner".format(install_folder))
-                #Function to ask before installing for use in dev to not screw up my computer, and test logic
-                if Dev_DoInstall():
-                    INSTALL_QT_SPINNER(backup_dir, OP_INFO, install_from_path)
-                    mark_self_installed()        # Create flag in /sdcard so auto installer knows there is a self installation
-                    print('Press enter to continue!')
-                    input()   
-            elif selected_option == '-Reboot-':
+            elif ip_set == '-Reboot-':
                 REBOOT()
-            elif selected_option == '-Quit-' or selected_option is None:
-                QUIT_PROG()        
-            elif selected_option == 'OP3T Boot Logo' or selected_option == 'LeEco Boot Logo':
-                ##Check if there was a Boot Logo backup already this session to prevent accidental overwrites
-                #Returns false if okay to proceed. Gets self.backup_dir & asset type name
-                if backup_overide_check(backup_dir, DeviceData["BOOT_LOGO_NAME"]) == True:
-                    break
-
-                #Backup & install new
-                install_from_path = ('{}/{}'.format(install_folder, DeviceData["BOOT_LOGO_THEME_PATH"]))
-                if Dev_DoInstall():
-                    INSTALL_BOOT_LOGO(DeviceData, backup_dir, install_from_path)
-                    mark_self_installed()       # Create flag in /sdcard so auto installer knows there is a self installation
-                    print('Press enter to continue!')
-                    input()'''
+            elif ip_set == '-Quit-' or ip_set is None:
+                QUIT_PROG() 
+            elif(ip_set=="Static"):
+                user_ip      = input(f"Enter IP or ENTER for [{conn_ip}]: ") or conn_ip
+                user_subnet  = input(f"Enter Subnet or ENTER for [{"255.255.255.0"}]: ") or "255.255.255.0"
+                user_gateway = input(f"Enter Gateway (Router) or ENTER for [{"192.168.1.1"}]: ") or "192.168.1.1"
+                user_ip_cidr = get_cidr(user_ip, user_subnet)
+                if(is_editing_active):
+                    print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
+                SET_IP('Static', connection_to_edit, is_editing_active, user_ip_cidr, user_gateway)       #Call the Set_IP Function as Static to begin, requires MODE[Static/DHCP], Selected Connection Name, IP in CIDR format, and Gateway
+            elif(ip_set=="DHCP"):
+                if(is_editing_active):
+                    print(Fore.RED + "\n\n**WARNING: CONNECTION MAY DROP, AND DEVICE WILL REBOOT!")
+                SET_IP('DHCP', connection_to_edit, is_editing_active, "", "")                                 #Call the Set_IP Function as DHCP to begin, requires MODE[Static/DHCP] and Selected Connection Name
+            
 
     def Cleanup_Files(self):         #Remove all traces of OP Tools
         #Print hAllo message
